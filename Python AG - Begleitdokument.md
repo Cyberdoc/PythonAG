@@ -571,7 +571,13 @@ while True:
     if GPIO.input(17) > 0:
         print("Taster gedrückt")
 ```
-Die Endlosschleife verursacht aber eine gewisse Last auf dem Pi. Daher ist es vielleicht vorzuziehen, einen Callback Interrupt auf dem Eingang zu registrieren. Damit wird eine definierte Funktion aufgerufen, wenn eine Zustandsänderung am Eingang ermittelt wird (dabei kann man die Registrierung für ansteigende, abfallende oder beide Flanken festlegen). 
+Die Endlosschleife verursacht aber eine gewisse Last auf dem Pi. Daher ist es vielleicht vorzuziehen, einen Callback Interrupt auf dem Eingang zu registrieren. Damit wird eine definierte Funktion (callback) aufgerufen, wenn eine Zustandsänderung am Eingang ermittelt wird (dabei kann man die Registrierung für ansteigende, abfallende oder beide Flanken festlegen). 
+
+```GPIO.add_event_detect(<Pin>, <Flanke>, callback = <Funktion>)```
+
+_Flanke_ kann RISING (steigend), FALLING (fallend) oder BOTH (steigen und fallend) sein. Für _Funktion_ wird der Name zu rufenden Funktion verwendet, dabei ohne Klammern. Die Funktion muss einen Parameter haben, darüber wird der Funktion mitgeteilt, welcher Pin den Interrupt ausgelöst hat.
+
++++
 
 ```python
 import RPi.GPIO as GPIO
@@ -585,18 +591,20 @@ GPIO.setup(19, GPIO.IN)
 def Interrupt(channel):
     print("Interrupt erkannt")
 
-GPIO.add_event_detect(17, GPIO.RISING, callback = Interrupt, bouncetime = 250)  
-GPIO.add_event_detect(18, GPIO.FALLING, callback = Interrupt, bouncetime = 250)  
-GPIO.add_event_detect(19, GPIO.BOTH, callback = Interrupt, bouncetime = 250)  
+GPIO.add_event_detect(17, GPIO.RISING, callback = Interrupt)  
+GPIO.add_event_detect(18, GPIO.FALLING, callback = Interrupt)  
+GPIO.add_event_detect(19, GPIO.BOTH, callback = Interrupt)  
 
-while True:
-    time.sleep(1)
-
+try:
+    while True:
+       time.sleep(1)
 except KeyboardInterrupt:
     GPIO.cleanup()
 ```
 
 Mit ```GPIO.cleanup()``` werden nach dem Programmabbruch mit CRTL+C alle Ein- und Ausgänge zurückgesetzt und die Interrupts gelöscht.
+
+Nebenbei wurde in dem Beispiel noch die Fehlerbehandlung mit ```try / except``` eingeführt. Im Verarbeitungsblock ```try```, wird ein Code Teil ausgeführt, der einen Fehler verursachen kann. Kommt es zu einem Fehler, wird das Programm nicht fehlerhaft beendet, sondern es wird der ```except``` Verarbeitungsblock ausgeführt. Dies kann nützlich sein, wenn man z.B eine Netzwerkverbindung offen hat, und diese sicher geschlossen werden soll, egal ob es Fehler gab oder nicht.
 
 +++
 # Klassen
@@ -605,7 +613,8 @@ Möchte man Funktionen logisch miteinander gruppieren und z.B. anderen zur Verf�
 
 Mit dem Schlüsselwort ```class``` wird eine Klasse definiert, danach kann man Klassenvariablen und Funktionen definieren.
 
-Dateiname auto.py:   
+Dateiname auto.py:  
+
 ```python
 class Auto:
     __init__(sitze, ps):
@@ -619,7 +628,9 @@ class Auto:
         print("Auto bremst")
 ```
 
++++
 Verwendet werden kann das ganze dann so:   
+
 ```python
 from auto import Auto
 
@@ -627,3 +638,5 @@ meinAuto = Auto(4, 120)
 meinAuto.gas_geben()
 meinAuto.bremsen()
 ```
+
+In dem Beispiel wurde eine Standard-Funktion ```__init__()``` verwendet, diese Funktion wird automatisch beim Erzeugen der Klasse (des Klassen-Objekts) ausgeführt. In dieser Methode können initiale Werte Übergeben (wie im Beispiel die Werte für Sitze und PS) und die Funktion kann bestimmte Initialisierungsaufgaben ausführen (z.B. den GPIO-Mode setzen), die auf jeden Fall beim Erzeugen ausgeführt werden müssen.
