@@ -20,7 +20,7 @@ def tasterGedrueckt():
     ampel.pkwGruen()
 
 
-GPIO.add_event_detect(SCHALTER, GPIO, RISING, callback=tasterGedrueckt)
+GPIO.add_event_detect(SCHALTER, GPIO.RISING, callback=tasterGedrueckt)
 
 while True:
     sleep(1)
