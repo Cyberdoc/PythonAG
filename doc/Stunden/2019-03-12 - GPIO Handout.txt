@@ -1,0 +1,24 @@
+  
+### Aufgabe 1
+Erweitere die Schaltung um einen Taster - entsprechend dem Schaltungsbild.
+
+### Aufgabe 2
+
+Wenn der Schalter gedrückt wird, soll die LED leuchten.
+Raspberry Pi GPIO Port als Eingang setzt:
+
+```python
+GPIO.setup(16, GPIO.IN)
+```
+
+Eingangswert lesen:
+
+```python
+GPIO.input(16)
+```
+
+* Wert = 0   - Taster nicht gedrückt
+* Wert > 0.5 - Taster gedrückt
+
+### Aufgabe 3
+Erweitert das Programm, die LED soll mit dem ersten Tastendruck eingeschaltet werden und leuchten. Mit einem weiteren Tastendruck wird die LED wieder ausgeschaltet.
