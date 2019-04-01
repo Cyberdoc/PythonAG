@@ -555,4 +555,75 @@ Dieses kurze Programm definiert, mit welcher Benennung man die Pins ansprechen w
 > * `GPIO.setmode(GPIO.BOARD)`  
 > Hier werden die Pins nach Nummerierung durchgezählt (1-40). Pin GPIO23, wäre also in diesem Fall Pin 16.
 
+Neben der Definition ```GPIO.OUT``` für einen Ausgang, gibt es auch noch die Möglichkeit einen Pin des GPIO als Eingang zu definieren. Dafür konfiguriert man mittels der bekannten setup-Funktion den Pin als Eingang ```GPIO.setup(17, GPIO.IN)```. Wenn ein Signal am Pin anliegt, bekommt man einen Wert 1 und wenn kein Signal anliegt den Wert 0. Dies kann z.B. verwendet werden, um einen Taster-Zustand einzulesen (0 = nicht gedrückt / 1 = gedrückt).
+
 +++
+
+Den aktuellen Wert ermittelt man über die Funktion ```GPIO.input(17)```. Damit bekommt man den Wert zu dem Zeitpunkt, an dem diese Funktion ausgeführt wird. Möchte man dauernd den Zustand ermitteln, um z.B. bei einem Tastendruck zu reagieren, dann müsste man dafür eine Endlosschleife verwenden:
+
+```python
+import RPi.GPIO as GPIO
+
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(17, GPIO.IN)
+
+while True:
+    if GPIO.input(17) > 0:
+        print("Taster gedrückt")
+```
+Die Endlosschleife verursacht aber eine gewisse Last auf dem Pi. Daher ist es vielleicht vorzuziehen, einen Callback Interrupt auf dem Eingang zu registrieren. Damit wird eine definierte Funktion aufgerufen, wenn eine Zustandsänderung am Eingang ermittelt wird (dabei kann man die Registrierung für ansteigende, abfallende oder beide Flanken festlegen). 
+
+```python
+import RPi.GPIO as GPIO
+import time
+
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(17, GPIO.IN)
+GPIO.setup(18, GPIO.IN)
+GPIO.setup(19, GPIO.IN)
+
+def Interrupt(channel):
+    print("Interrupt erkannt")
+
+GPIO.add_event_detect(17, GPIO.RISING, callback = Interrupt, bouncetime = 250)  
+GPIO.add_event_detect(18, GPIO.FALLING, callback = Interrupt, bouncetime = 250)  
+GPIO.add_event_detect(19, GPIO.BOTH, callback = Interrupt, bouncetime = 250)  
+
+while True:
+    time.sleep(1)
+
+except KeyboardInterrupt:
+    GPIO.cleanup()
+```
+
+Mit ```GPIO.cleanup()``` werden nach dem Programmabbruch mit CRTL+C alle Ein- und Ausgänge zurückgesetzt und die Interrupts gelöscht.
+
++++
+# Klassen
+
+Möchte man Funktionen logisch miteinander gruppieren und z.B. anderen zur Verfügung stellen, empfiehlt es sich, Klasse zu verwenden. Eine Klasse definiert dabei Eigenschaften und Funktionen, die an etwas ausgeführt werden können. Ein Beispiel für eine Klasse wäre ein Auto. Ein Auto hat Eigentschaften wie die Motorleistung oder die Anzahl Sitzplätze. Zusätzlich kann ein Auto Funktionen haben, wie gas geben oder bremsen.
+
+Mit dem Schlüsselwort ```class``` wird eine Klasse definiert, danach kann man Klassenvariablen und Funktionen definieren.
+
+Dateiname auto.py:   
+```python
+class Auto:
+    __init__(sitze, ps):
+        self.sitze = sitze
+        self.ps = ps
+    
+    def gas_geben():
+        print("Auto gibt gas, mit der Leistung von %s PS" % self.ps)
+    
+    def bremsen():
+        print("Auto bremst")
+```
+
+Verwendet werden kann das ganze dann so:   
+```python
+from auto import Auto
+
+meinAuto = Auto(4, 120)
+meinAuto.gas_geben()
+meinAuto.bremsen()
+```
