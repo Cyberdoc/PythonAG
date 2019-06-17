@@ -3,6 +3,10 @@ from RPi import GPIO
 STATUS_LIST = [(17,17), (34,27), (50,5), (67,6), (85,13), (99,19)]
 
 class AnzeigeKurz:
+    min = 0
+    max = 100
+    diff = 100
+    
     def __init__(self):
         GPIO.setmode(GPIO.BCM)
 
@@ -22,3 +26,12 @@ class AnzeigeKurz:
             if (anzeige_wert >= wert):
                 GPIO.output(pin, GPIO.HIGH)
 
+    def define_range(self, min, max):
+        self.min = min
+        self.max = max
+        self.diff = max - min
+        
+    def range_status(self, wert):
+        status_wert = 100 * (wert - self.min) / self.diff
+        self.status(status_wert)
+        
